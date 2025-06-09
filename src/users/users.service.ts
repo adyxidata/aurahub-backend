@@ -18,6 +18,10 @@ export class UsersService {
     });
   }
 
+  async findOne(id: string): Promise<User | undefined> {
+    return this.findOneById(id);
+  }
+
   async create(email: string, passwordHash: string): Promise<User> {
     return this.prisma.user.create({
       data: {
@@ -31,6 +35,13 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id: userId },
       data: { balance: { increment: amount } },
+    });
+  }
+
+  async setBalance(userId: string, newBalance: number): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { balance: newBalance },
     });
   }
 }

@@ -36,7 +36,7 @@ export class ConsultationsService {
     }
 
     // Списываем сумму с баланса пользователя
-    await this.usersService.updateBalance(userId, user.balance - consultationCost);
+    await this.usersService.setBalance(userId, user.balance - consultationCost);
 
     const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
     if (!n8nWebhookUrl) {
@@ -44,12 +44,26 @@ export class ConsultationsService {
     }
 
     try {
-      const response = await this.httpService.post(n8nWebhookUrl, {
-        userId,
-        expertId,
-        question,
-      }).toPromise();
-      return response.data;
+      const response = await this.httpService
+        .post(n8nWebhookUrl, {
+          userId,
+          expertId,
+          question,
+        })
+        .toPromise();
+
+      const answer = response.data?.answer ?? null;
+
+      await this.prisma.consultation.create({
+        data: {
+          userId,
+          expertId,
+          question,
+          answer,
+        },
+      });
+
+      return { answer };
     } catch (error) {
       console.error('Ошибка при отправке вопроса в n8n:', error.message);
       // Если отправка в n8n не удалась, можно рассмотреть откат транзакции (возврат средств)
@@ -59,16 +73,14 @@ export class ConsultationsService {
   }
 
   async getConsultations(userId: string) {
-    // Здесь будет логика получения консультаций из базы данных
-    // Например:
-    // return this.prisma.consultation.findMany({ where: { userId } });
-    return []; // Заглушка
+    return this.prisma.consultation.findMany({
+      where: { userId },
+    });
   }
 
   async getConsultationById(consultationId: string) {
-    // Здесь будет логика получения деталей конкретной консультации
-    // Например:
-    // return this.prisma.consultation.findUnique({ where: { id: consultationId } });
-    return null; // Заглушка
+    return this.prisma.consultation.findUnique({
+      where: { id: consultationId },
+    });
   }
 }
