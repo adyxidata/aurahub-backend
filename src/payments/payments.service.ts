@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // Предполагаем, что у вас есть PrismaService
 import { PaymentStatus } from '@prisma/client'; // Импортируем enum из сгенерированного клиента
 import { UsersService } from '../users/users.service'; // Предполагаем, что у вас есть UsersService
